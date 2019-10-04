@@ -3,11 +3,19 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import numpy as np
+import pandas as pd
+import plotly_express as px
 import plotly.graph_objs as go
 
+from Algorithms.BasicRL.k_arm_bandit import run_e_greedy_bandit
 from app import app
 from dash.dependencies import Input,Output,State
 from scipy.stats import norm
+
+
+tips = px.data.tips()
+col_options = [dict(label=x, value=x) for x in tips.columns]
+dimensions = ["x", "y", "color", "facet_col", "facet_row"]
 
 layout_posterior = go.Layout(
 
@@ -112,13 +120,16 @@ layout = html.Div([
 
     ],className="row",style={"margin-top":"10px"}),
 
+    ###############
+    # Reward Graph
+    ###############
     html.Div([
 
         html.Div([
 
             html.H3(children="Reward Graph",className='text-center'),
 
-            dcc.Graph(id='reward-graph')
+            dcc.Graph(id='reward-graph',style={"width": "75%", "display": "inline-block"})
 
         ],className="col-sm-12")
 
@@ -191,27 +202,47 @@ def update_current_sample(n_clicks,input1):
 
     return fig
 
+
+
 #################
 # Run Model
 #################
 @app.callback(
-    dash.dependencies.Output('run-model-hidden','children'),
-    [Input('run-model', 'click')],
-    [dash.dependencies.State('reward-distribution','figure'),
-     dash.dependencies.State('epsilon-value', 'value'),
-     dash.dependencies.State('init-q-value', 'value'),
-     dash.dependencies.State('algorithm-select', 'value')]
+    Output('reward-graph','figure'),
+    [Input('run-model', 'n_clicks')],
+    [State('reward-distribution','figure'),
+     State('epsilon-value', 'value'),
+     State('init-q-value', 'value'),
+     State('algorithm-select', 'value')]
 )
 def run_model(n_click,reward_figure,epsilon_value,init_q_value,algo_type):
 
     print("Running run_model task")
 
     epochs = 1000
+    if n_click <= 0:
+        data = {}
+        df = pd.DataFrame(data)
 
-    #result = k_arm_bandit.delay(hdf_file_path, reward_figure, epochs, epsilon_value,init_q_value,algo_type)
+    else:
+        #result = k_arm_bandit.delay(hdf_file_path, reward_figure, epochs, epsilon_value,init_q_value,algo_type)
 
-    #dset, avg_reward, q_values, count_values = result.get()
+        dset, avg_reward, q_values, count_values = run_e_greedy_bandit(reward_figure,epochs,epsilon_value,init_q_value,algo_type)
 
+        x = [i for i in range(len(dset))]
+
+        data = {
+            'epoch':x,
+            'avg_reward':dset
+        }
+        df = pd.DataFrame(data)
+
+        fig = px.scatter(df,x='epoch',y='avg_reward')
+
+
+    return px.scatter(df,x='epoch',y='avg_reward',height=700)
+
+    print('')
     print("Done running model")
     #print("avg reward: " + str(avg_reward))
 

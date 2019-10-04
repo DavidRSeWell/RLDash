@@ -4,7 +4,7 @@ import dash_table
 
 from dash.dependencies import Input, Output,State
 from app import app
-from apps import k_arm_bandit
+from apps import k_arm_bandit_app
 
 app.layout = html.Div(children=[
 
@@ -41,7 +41,7 @@ def display_page(pathname):
 
     if pathname == '/k_arm':
 
-        return k_arm_bandit.layout
+        return k_arm_bandit_app.layout
 
     else:
         return "404"

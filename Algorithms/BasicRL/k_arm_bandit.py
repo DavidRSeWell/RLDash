@@ -7,6 +7,40 @@ import numpy as np
 
 from scipy.stats import norm
 
+
+def select_action(q_values,count_values,epsilon,num_levers,t,algorithm_type,c=1):
+
+    action = None  # will be the index of the lever selected
+
+    if algorithm_type == 'greedy':
+
+        rand_uniform = np.random.uniform(0, 1)
+
+        if rand_uniform <= epsilon:
+            # take random action
+            action = np.random.randint(0, num_levers)
+        else:
+            action = np.argmax(q_values)
+
+    elif algorithm_type == 'UCB':
+
+        ucb_values = []
+        for i in range(len(q_values)):
+
+            ucb_value = q_values[i] + c*np.sqrt( np.log(t) / float(count_values[i] ) )
+
+            ucb_values.append(ucb_value)
+
+        action = np.argmax(ucb_values)
+
+    elif algorithm_type == 'greedy-2':
+        pass
+
+    else:
+        print("Error incorrect algorithm type")
+
+    return action
+
 def run_e_greedy_bandit(lever_data,epochs,epsilon,init_q_value,algo_type):
     '''
     This is a function for running the epsilon greedy bandit with different
@@ -28,15 +62,16 @@ def run_e_greedy_bandit(lever_data,epochs,epsilon,init_q_value,algo_type):
 
     q_values = np.ones(len(lever_data)) * init_q_value
 
+    avg_reward_data = [0]
+
     avg_reward = 0
+
     for i in range(1, epochs + 1):
         print("Epoch: " + str(i))
 
         print("Avg Reward: " + str(avg_reward))
 
         print("Reward Vector: " + str(q_values))
-
-        rand_uniform = np.random.uniform(0, 1)
 
         action = select_action(q_values, count_values, epsilon, len(lever_data), i, algo_type, 1)
 
@@ -54,6 +89,7 @@ def run_e_greedy_bandit(lever_data,epochs,epsilon,init_q_value,algo_type):
         # Update overall average reward
         avg_reward = avg_reward + (1.0 / i) * (reward - avg_reward)
 
+        avg_reward_data.append(avg_reward)
 
-    return data, avg_reward, list(q_values), list(count_values)
+    return avg_reward_data, avg_reward, list(q_values), list(count_values)
 
