@@ -31,7 +31,7 @@ layout = html.Div([
     html.Div([
 
         html.Div([
-
+            # PARAMETER SELECTION FORM
             html.Form([
 
                 html.Div([
@@ -93,7 +93,7 @@ layout = html.Div([
 
             ],id='model-parameter-form',style={"margin-bottom":"25px"}),
 
-
+            # BUTTONS DIV
             html.Div([
                 html.Button(id='submit-button', n_clicks=0, type="button",children='Sample', className="btn btn-primary"),
                 html.Button(id='run-model', n_clicks=0, type="button", children='Run', className="btn btn-primary"),
@@ -130,8 +130,8 @@ layout = html.Div([
             html.H3(children="Reward Graph",className='text-center'),
 
             dcc.Graph(id='reward-graph',style={"width": "75%", "display": "inline-block"})
-
         ],className="col-sm-12")
+
 
     ],className="row",style={"margin-top":"10px"}),
 
@@ -221,7 +221,8 @@ def run_model(n_click,reward_figure,epsilon_value,init_q_value,algo_type):
 
     epochs = 1000
     if n_click <= 0:
-        data = {}
+
+        data = {'epoch':[],'avg_reward':[]}
         df = pd.DataFrame(data)
 
     else:
@@ -237,7 +238,7 @@ def run_model(n_click,reward_figure,epsilon_value,init_q_value,algo_type):
         }
         df = pd.DataFrame(data)
 
-        fig = px.scatter(df,x='epoch',y='avg_reward')
+        #fig = px.scatter(df,x='epoch',y='avg_reward')
 
 
     return px.scatter(df,x='epoch',y='avg_reward',height=700)
